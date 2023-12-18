@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<head>
+    <title>Автомобiлi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="top">
+        <div class="selectable">
+            <button class="button">Car</button>
+            <div class="cars"></div>
+        </div>
+    </div>
+    <div class="elements"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('cars.json')
+                .then(response => response.json())
+                .then(data => {
+                    const elementsDiv = document.querySelector('.elements');
+                    const carsDiv = document.querySelector('.cars');
+                    let currentFilter = null;
+
+                    const uniqueMarks = [...new Set(data.map(car => car.mark))];
+
+                    uniqueMarks.forEach(mark => {
+                        const carList = document.createElement('a');
+                        carList.innerHTML = mark;
+                        carList.addEventListener('click', function() {
+                            currentFilter = mark;
+                            filterCars(currentFilter);
+                        });
+                        carsDiv.appendChild(carList);
+                    });
+
+                    data.forEach(car => {
+                        const carDiv = document.createElement('div');
+                        carDiv.innerHTML = `
+                            <div>
+                                <div class="media">
+                                    <img src="${car.preview}">
+                                </div>
+                                <div class="content">
+                                    <div class="meta">
+                                        <a href='${car.details}'>
+                                        <span id="name">${car.name}</span><br>
+                                        <span id="price">$${car.price.toLocaleString()}${car.price_2 !== null ? ` - $${car.price_2.toLocaleString()}` : ''}</span><br>
+                                        <span id="year">Year: ${car.year}</span>
+                                        <span id="power">• Power: ${car.power} hp</span><br>
+                                        <span id="engine">Engine: ${car.engine}L</span>
+                                        <span id="zero-hundred">• 0-100: ${car['0-100']}s</span><br>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        elementsDiv.appendChild(carDiv);
+                    });
+
+                    const allCarsButton = document.querySelector('.button');
+                    allCarsButton.addEventListener('click', function() {
+                        currentFilter = null;
+                        filterCars(currentFilter);
+                    });
+
+                    function filterCars(mark) {
+                    const cars = document.querySelectorAll('.elements > div');
+                    const regex = new RegExp(mark, 'i');
+
+                    cars.forEach(car => {
+                        const name = car.querySelector('#name').textContent;
+                        if (mark === null || regex.test(name)) {
+                            car.style.display = 'block';
+                        } else {
+                            car.style.display = 'none';
+                        }
+                    });
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error fetching cars.json:', error);
+                });
+        });
+    </script>
+</body>
+</html>
